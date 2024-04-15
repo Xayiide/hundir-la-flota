@@ -1,6 +1,11 @@
 # Vim intermediary files
 *.swp
 
+# Eclipse
+*.cproject
+*.project
+*.settings
+
 # Ejecutables
 src/hlf
 
