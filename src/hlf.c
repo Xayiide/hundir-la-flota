@@ -90,6 +90,8 @@ int main()
 
     SDL_RenderSetLogicalSize(rnd, COLUMNAS * 2, FILAS);
 
+    barco_init();
+
     while (run) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {

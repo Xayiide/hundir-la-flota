@@ -8,6 +8,10 @@
 #include "inc/hlf.h"
 #include "inc/barco.h"
 
+
+#define BARCO_NUM_BARCOS 4
+
+
 typedef enum {
     VERTICAL   = 0,
     HORIZONTAL = 1
@@ -18,7 +22,6 @@ typedef struct {
     barco_dir_e dir;
     SDL_Point   pos;
 } barco_t;
-
 
 //static barco_t own_ships[BARCO_NUM_BARCOS];
 //static barco_t enemy_ships[BARCO_NUM_BARCOS];
@@ -44,7 +47,15 @@ bool barco_crear(size_t len)
 
     ret = barco_validar(dir, len, c, f);
 
-    return ret;;
+    if (ret == false) {
+        fprintf(stderr, "error creando barco:\n");
+        fprintf(stderr, "    dir: %d\n", dir);
+        fprintf(stderr, "    len: %d\n", len);
+        fprintf(stderr, "    f:   %d\n", f);
+        fprintf(stderr, "    c:   %d\n", c);
+    }
+
+    return ret;
 }
 
 barco_dir_e barco_rand_dir()
@@ -63,29 +74,58 @@ void barco_rand_pos(barco_dir_e dir, size_t len, int *c, int *f)
      * el barco va hacia abajo desde barco.pos. En horizontal va hacia la
      * derecha */
     if (dir == VERTICAL) {
-        *c = rand() % (COLUMNAS);
-        *f = rand() % (FILAS - len);
+        *c = (int) (rand() % (COLUMNAS));
+        *f = (int) (rand() % (FILAS - len));
     }
     else if (dir == HORIZONTAL) {
-        *c = rand() % (COLUMNAS - len);
-        *f = rand() % (FILAS);
+        *c = (int) (rand() % (COLUMNAS - len));
+        *f = (int) (rand() % (FILAS));
     }
 }
 
 bool barco_validar(barco_dir_e dir, size_t len, int c, int f)
 {
     size_t i;
+    bool   ret = true;
 
-    for (i = 0; i < len; i++) {
-
+    if (dir == VERTICAL) {
+        for (i = 0; i < len; i++) {
+            if (((i + f) < FILAS) && (own_ships[f + i][c] == 0)) {
+                continue;
+            }
+            else {
+                ret = false;
+                break;
+            }
+        }
     }
+    else if (dir == HORIZONTAL) {
+         for (i = 0; i < len; i++){
+             if (((i + c) < COLUMNAS) && (own_ships[f][c + i] == 0)) {
+                 continue;
+             }
+             else {
+                 ret = false;
+                 break;
+             }
+         }
+    }
+
+    return ret;
 }
 
 void barco_init()
 {
     bool ret;
+    int  f, c;
     srand((unsigned int) time(NULL));
 
+    /* Inicializa matriz de barcos */
+    for (f = 0; f < FILAS; f++) {
+        for (c = 0; c < COLUMNAS; c++) {
+            own_ships[f][c] = false;
+        }
+    }
 
     /* 2 barcos de 2, 1 de 3 y 1 de 4 */
     ret  = barco_crear((size_t) 2);
