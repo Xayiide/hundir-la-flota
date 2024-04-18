@@ -42,6 +42,7 @@ void imprime(bool casillas[FILAS][COLUMNAS * 2], SDL_Renderer *rnd, SDL_Point mo
     }
 
     /* Pintar mis barcos */
+    barco_imprimir(rnd);
 
     /* Pintar el ratón */
     SDL_SetRenderDrawColor(rnd, 0, 255, 255, SDL_ALPHA_OPAQUE);
