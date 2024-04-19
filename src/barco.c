@@ -23,10 +23,16 @@ typedef struct {
     SDL_Point   pos;
 } barco_t;
 
+typedef enum {
+    AGUA   = 0,
+    BARCO  = 1,
+    TOCADO = 2,
+} barco_celda_e;
+
 //static barco_t own_ships[BARCO_NUM_BARCOS];
 //static barco_t enemy_ships[BARCO_NUM_BARCOS];
 
-static bool own_ships[FILAS][COLUMNAS];
+static barco_celda_e own_ships[FILAS][COLUMNAS];
 
 
 static bool        barco_crear   (size_t len);
@@ -107,7 +113,7 @@ bool barco_validar(barco_dir_e dir, size_t len, int c, int f)
 
     if (dir == VERTICAL) {
         for (i = 0; i < len; i++) {
-            if (((i + f) < FILAS) && (own_ships[f + i][c] == 0)) {
+            if (((i + f) < FILAS) && (own_ships[f + i][c] == AGUA)) {
                 continue;
             }
             else {
@@ -118,7 +124,7 @@ bool barco_validar(barco_dir_e dir, size_t len, int c, int f)
     }
     else if (dir == HORIZONTAL) {
          for (i = 0; i < len; i++){
-             if (((i + c) < COLUMNAS) && (own_ships[f][c + i] == 0)) {
+             if (((i + c) < COLUMNAS) && (own_ships[f][c + i] == AGUA)) {
                  continue;
              }
              else {
@@ -137,12 +143,12 @@ void barco_guardar(barco_dir_e dir, size_t len, int c, int f)
 
     if (dir == VERTICAL) {
         for (i = 0; i < len; i++) {
-            own_ships[f + i][c] = true;
+            own_ships[f + i][c] = BARCO;
         }
     }
     else if (dir == HORIZONTAL) {
         for (i = 0; i < len; i++) {
-            own_ships[f][c + i] = true;
+            own_ships[f][c + i] = BARCO;
         }
     }
 
@@ -160,7 +166,7 @@ void barco_init()
     /* Inicializa matriz de barcos */
     for (f = 0; f < FILAS; f++) {
         for (c = 0; c < COLUMNAS; c++) {
-            own_ships[f][c] = false;
+            own_ships[f][c] = AGUA;
         }
     }
 
@@ -185,7 +191,7 @@ void barco_imprimir(SDL_Renderer *rnd)
     SDL_SetRenderDrawColor(rnd, 86, 232, 105, SDL_ALPHA_OPAQUE);
     for (f = 0; f < FILAS; f++) {
         for (c = 0; c < COLUMNAS; c++) {
-            if (own_ships[f][c] == true) {
+            if (own_ships[f][c] == BARCO) {
                 SDL_RenderDrawPoint(rnd, c, f);
             }
         }
