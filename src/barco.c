@@ -42,21 +42,30 @@ bool barco_crear(size_t len)
     bool        ret = false;
     int         c, f;
     barco_dir_e dir;
+    int         num_intentos = 0;
 
-    dir = barco_rand_dir();
-    barco_rand_pos(dir, len, &c, &f);
 
-    ret = barco_validar(dir, len, c, f);
+    do {
+        dir = barco_rand_dir();
+        barco_rand_pos(dir, len, &c, &f);
+        ret = barco_validar(dir, len, c, f);
+        num_intentos++;
+    } while ((ret == false) && (num_intentos < 5));
 
     if (ret == false) {
         fprintf(stderr, "error creando barco:\n");
         fprintf(stderr, "    dir: %d\n", dir);
         fprintf(stderr, "    len: %ld\n", len);
-        fprintf(stderr, "    f:   %d\n", f);
         fprintf(stderr, "    c:   %d\n", c);
+        fprintf(stderr, "    f:   %d\n", f);
     }
     else {
         barco_guardar(dir, len, c, f);
+        printf("Barco guardado:\n");
+        printf("    dir: %d\n", dir);
+        printf("    len: %ld\n", len);
+        printf("    c:   %d\n", c);
+        printf("    f:   %d\n", f);
     }
 
     return ret;
@@ -93,6 +102,8 @@ bool barco_validar(barco_dir_e dir, size_t len, int c, int f)
 {
     size_t i;
     bool   ret = true;
+
+    /* TODO: no se permiten barcos adyacentes */
 
     if (dir == VERTICAL) {
         for (i = 0; i < len; i++) {
