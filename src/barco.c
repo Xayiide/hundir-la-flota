@@ -41,6 +41,9 @@ static void        barco_rand_pos(barco_dir_e dir, size_t len, int *c, int *f);
 static bool        barco_validar (barco_dir_e dir, size_t len, int  c, int  f);
 static void        barco_guardar (barco_dir_e dir, size_t len, int  c, int  f);
 
+static void        barco_rand_pos_2(barco_t *b);
+static void        barco_validar(barco_t b);
+static void        barco_guardar(barco_t b);
 
 
 bool barco_crear(size_t len)
