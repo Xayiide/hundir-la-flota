@@ -17,10 +17,16 @@ typedef enum {
     HORIZONTAL = 1
 } barco_dir_e;
 
+typedef enum {
+    ALIADO  = 0,
+    ENEMIGO = 1
+} barco_bando_e;
+
 typedef struct {
-    size_t      len;
-    barco_dir_e dir;
-    SDL_Point   pos;
+    size_t        len;
+    barco_dir_e   dir;
+    barco_bando_e bando;
+    SDL_Point     pos;
 } barco_t;
 
 typedef enum {
@@ -29,52 +35,51 @@ typedef enum {
     TOCADO = 2,
 } barco_celda_e;
 
-//static barco_t own_ships[BARCO_NUM_BARCOS];
+//static barco_t barcos_aliados[BARCO_NUM_BARCOS];
 //static barco_t enemy_ships[BARCO_NUM_BARCOS];
 
-static barco_celda_e own_ships[FILAS][COLUMNAS];
+static barco_celda_e barcos_aliados[FILAS][COLUMNAS];
+static barco_celda_e barcos_enemigos[FILAS][COLUMNAS];
 
 
-static bool        barco_crear   (size_t len);
+static bool        barco_crear   (size_t len, barco_bando_e bando);
 static barco_dir_e barco_rand_dir();
-static void        barco_rand_pos(barco_dir_e dir, size_t len, int *c, int *f);
-static bool        barco_validar (barco_dir_e dir, size_t len, int  c, int  f);
-static void        barco_guardar (barco_dir_e dir, size_t len, int  c, int  f);
-
-static void        barco_rand_pos_2(barco_t *b);
-static void        barco_validar(barco_t b);
-static void        barco_guardar(barco_t b);
+static void        barco_rand_pos(barco_t *b);
+static bool        barco_validar (barco_t b);
+static void        barco_guardar (barco_t b);
 
 
-bool barco_crear(size_t len)
+bool barco_crear(size_t len, barco_bando_e bando)
 {
     bool        ret = false;
-    int         c, f;
-    barco_dir_e dir;
     int         num_intentos = 0;
+    barco_t     barco;
 
+    barco.len   = len;
+    barco.bando = bando;
 
     do {
-        dir = barco_rand_dir();
-        barco_rand_pos(dir, len, &c, &f);
-        ret = barco_validar(dir, len, c, f);
+        barco.dir = barco_rand_dir();
+        barco_rand_pos(&barco);
+        ret = barco_validar(barco);
         num_intentos++;
     } while ((ret == false) && (num_intentos < 5));
 
     if (ret == false) {
         fprintf(stderr, "error creando barco:\n");
-        fprintf(stderr, "    dir: %d\n", dir);
-        fprintf(stderr, "    len: %ld\n", len);
-        fprintf(stderr, "    c:   %d\n", c);
-        fprintf(stderr, "    f:   %d\n", f);
+        fprintf(stderr, "    dir: %d\n",  barco.dir);
+        fprintf(stderr, "    len: %ld\n", barco.len);
+        fprintf(stderr, "    x:   %d\n",  barco.pos.x);
+        fprintf(stderr, "    y:   %d\n",  barco.pos.y);
     }
     else {
-        barco_guardar(dir, len, c, f);
+        //barco_guardar(dir, len, c, f);
+        barco_guardar(barco);
         printf("Barco guardado:\n");
-        printf("    dir: %d\n", dir);
-        printf("    len: %ld\n", len);
-        printf("    c:   %d\n", c);
-        printf("    f:   %d\n", f);
+        printf("    dir: %d\n",  barco.dir);
+        printf("    len: %ld\n", barco.len);
+        printf("    x:   %d\n",  barco.pos.x);
+        printf("    y:   %d\n",  barco.pos.y);
     }
 
     return ret;
@@ -89,34 +94,45 @@ barco_dir_e barco_rand_dir()
     return ret;
 }
 
-void barco_rand_pos(barco_dir_e dir, size_t len, int *c, int *f)
+void barco_rand_pos(barco_t *b)
 {
-    /* Poner las limitaciones en el rand nos permite forzar el sentido del
-     * barco, lo que facilita a la hora de comprobar la validez. En vertical
-     * el barco va hacia abajo desde barco.pos. En horizontal va hacia la
-     * derecha */
-    if (dir == VERTICAL) {
-        *c = (int) (rand() % (COLUMNAS));
-        *f = (int) (rand() % (FILAS - len));
+    if (b->dir == VERTICAL) {
+        b->pos.x = (int) (rand() % (COLUMNAS));
+        b->pos.y = (int) (rand() % (FILAS - b->len));
     }
-    else if (dir == HORIZONTAL) {
-        *c = (int) (rand() % (COLUMNAS - len));
-        *f = (int) (rand() % (FILAS));
+    else if (b->dir == HORIZONTAL) {
+        b->pos.x = (int) (rand() % (COLUMNAS - b->len));
+        b->pos.y = (int) (rand() % (FILAS));
     }
 
     return;
 }
 
-bool barco_validar(barco_dir_e dir, size_t len, int c, int f)
+bool barco_validar(barco_t b)
 {
-    size_t i;
-    bool   ret = true;
+    size_t        i, f, c;
+    bool          ret = true;
+    barco_celda_e barcos[FILAS][COLUMNAS];
+
+    /* TODO: Estaría bien no tener que hacer esto sino utilizar un puntero
+     * o algo directamente */
+    for (f = 0; f < FILAS; f++) {
+        for (c = 0; c < COLUMNAS; c++) {
+            if (b.bando == ALIADO) {
+                barcos[f][c] = barcos_aliados[f][c];
+            }
+            else if (b.bando == ENEMIGO) {
+                barcos[f][c] = barcos_enemigos[f][c];
+            }
+        }
+    }
+
 
     /* TODO: no se permiten barcos adyacentes */
-
-    if (dir == VERTICAL) {
-        for (i = 0; i < len; i++) {
-            if (((i + f) < FILAS) && (own_ships[f + i][c] == AGUA)) {
+    if (b.dir == VERTICAL) {
+        for (i = 0; i < b.len; i++) {
+            if (((i + b.pos.y) < FILAS)
+                    && (barcos[b.pos.y + i][b.pos.x] == AGUA)) {
                 continue;
             }
             else {
@@ -125,40 +141,45 @@ bool barco_validar(barco_dir_e dir, size_t len, int c, int f)
             }
         }
     }
-    else if (dir == HORIZONTAL) {
-         for (i = 0; i < len; i++){
-             if (((i + c) < COLUMNAS) && (own_ships[f][c + i] == AGUA)) {
-                 continue;
-             }
-             else {
-                 ret = false;
-                 break;
-             }
-         }
+    else if (b.dir == HORIZONTAL) {
+        for (i = 0; i < b.len; i++) {
+            if (((i + b.pos.x) < COLUMNAS)
+                    && (barcos[b.pos.y][b.pos.x + i] == AGUA)) {
+                continue;
+            }
+            else {
+                ret = false;
+                break;
+            }
+        }
     }
 
     return ret;
 }
 
-void barco_guardar(barco_dir_e dir, size_t len, int c, int f)
+void barco_guardar(barco_t b)
 {
     size_t i;
 
-    if (dir == VERTICAL) {
-        for (i = 0; i < len; i++) {
-            own_ships[f + i][c] = BARCO;
+    if (b.dir == VERTICAL) {
+        for (i = 0; i < b.len; i++) {
+            if (b.bando == ALIADO)
+                barcos_aliados[b.pos.y + i][b.pos.x] = BARCO;
+            else if (b.bando == ENEMIGO)
+                barcos_enemigos[b.pos.y + i][b.pos.x] = BARCO;
         }
     }
-    else if (dir == HORIZONTAL) {
-        for (i = 0; i < len; i++) {
-            own_ships[f][c + i] = BARCO;
+    else if (b.dir == HORIZONTAL) {
+        for (i = 0; i < b.len; i++) {
+            if (b.bando == ALIADO)
+                barcos_aliados[b.pos.y][b.pos.x + i] = BARCO;
+            else if (b.bando == ENEMIGO)
+                barcos_enemigos[b.pos.y][b.pos.x + i] = BARCO;
         }
     }
 
     return;
 }
-
-
 
 void barco_init()
 {
@@ -169,15 +190,20 @@ void barco_init()
     /* Inicializa matriz de barcos */
     for (f = 0; f < FILAS; f++) {
         for (c = 0; c < COLUMNAS; c++) {
-            own_ships[f][c] = AGUA;
+            barcos_aliados[f][c] = AGUA;
         }
     }
 
     /* 2 barcos de 2, 1 de 3 y 1 de 4 */
-    ret  = barco_crear((size_t) 2);
-    ret |= barco_crear((size_t) 2);
-    ret |= barco_crear((size_t) 3);
-    ret |= barco_crear((size_t) 4);
+    ret  = barco_crear((size_t) 2, ALIADO);
+    ret |= barco_crear((size_t) 2, ALIADO);
+    ret |= barco_crear((size_t) 3, ALIADO);
+    ret |= barco_crear((size_t) 4, ALIADO);
+
+    ret |= barco_crear((size_t) 2, ENEMIGO);
+    ret |= barco_crear((size_t) 2, ENEMIGO);
+    ret |= barco_crear((size_t) 3, ENEMIGO);
+    ret |= barco_crear((size_t) 4, ENEMIGO);
 
     if (ret == false) {
         fprintf(stderr, "No se han podido inicializar los barcos.\n");
@@ -191,11 +217,22 @@ void barco_imprimir(SDL_Renderer *rnd)
 {
     int f, c;
 
+    /* Imprime barcos aliados */
     SDL_SetRenderDrawColor(rnd, 86, 232, 105, SDL_ALPHA_OPAQUE);
     for (f = 0; f < FILAS; f++) {
         for (c = 0; c < COLUMNAS; c++) {
-            if (own_ships[f][c] == BARCO) {
+            if (barcos_aliados[f][c] == BARCO) {
                 SDL_RenderDrawPoint(rnd, c, f);
+            }
+        }
+    }
+
+    /* Imprime barcos enemigos */
+    SDL_SetRenderDrawColor(rnd, 168, 98, 50, SDL_ALPHA_OPAQUE);
+    for (f = 0; f < FILAS; f++) {
+        for (c = 0; c < COLUMNAS; c++) {
+            if (barcos_enemigos[f][c] == BARCO) {
+                SDL_RenderDrawPoint(rnd, c + COLUMNAS, f);
             }
         }
     }
