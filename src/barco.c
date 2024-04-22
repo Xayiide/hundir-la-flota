@@ -240,3 +240,15 @@ void barco_imprimir(SDL_Renderer *rnd)
     return;
 }
 
+bool barco_celda_ocupada(SDL_Point p)
+{
+    bool ret = false;
+
+    printf("Comprobando barcos_enemigos[%d][%d]\n", p.y, p.x - COLUMNAS);
+
+    if (barcos_enemigos[p.y][p.x - COLUMNAS] == BARCO) {
+        ret = true;
+    }
+
+    return ret;
+}

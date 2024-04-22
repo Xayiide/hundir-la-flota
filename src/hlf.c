@@ -114,6 +114,22 @@ int main()
                 mouse.x = x;
                 mouse.y = y;
             }
+            else if (e.type == SDL_MOUSEBUTTONDOWN) {
+                int auxx, auxy;
+                SDL_Point p;
+                SDL_GetMouseState(&auxx, &auxy);
+                p.x = (auxx / (int) PXFACTOR);
+                p.y = (auxy / (int) PXFACTOR);
+
+                if (p.x >= COLUMNAS) {
+                    printf("Comprobando (x, y) (%d, %d)\n", p.x, p.y);
+                    if (barco_celda_ocupada(p) == true) {
+                        printf("Tocado! (x, y) (%d, %d)\n", p.x, p.y);
+                    }
+                }
+
+
+            }
         }
 
         imprime(casillas, rnd, mouse);
