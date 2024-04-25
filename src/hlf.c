@@ -70,6 +70,8 @@ int main()
     printf("PXCOLUMNAS: %d\n", PXCOLUMNAS);
     printf("PXFILAS:  %d\n", PXFILAS);
 
+    barco_init();
+
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
         fprintf(stderr, "Error en la inicialización de SDL.\n");
         exit(EXIT_FAILURE);
@@ -91,7 +93,6 @@ int main()
 
     SDL_RenderSetLogicalSize(rnd, COLUMNAS * 2, FILAS);
 
-    barco_init();
 
     while (run) {
         while (SDL_PollEvent(&e)) {
