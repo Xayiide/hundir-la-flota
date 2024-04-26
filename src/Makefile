@@ -5,7 +5,7 @@ CFLAGS = -std=gnu99 -Wall -Wextra -Wpedantic -Wconversion \
 LFLAGS = -lSDL2
 
 TRGT = hlf
-SRCS = hlf.c barco.c
+SRCS = hlf.c barco.c partida.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(TRGT)

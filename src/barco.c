@@ -39,7 +39,6 @@ static barco_celda_e barcos_aliados[FILAS][COLUMNAS];
 static barco_celda_e barcos_enemigos[FILAS][COLUMNAS];
 
 
-static bool        barco_crear   (size_t len, barco_bando_e bando);
 static barco_dir_e barco_rand_dir();
 static void        barco_rand_pos(barco_t *b);
 static bool        barco_validar (barco_t b);
@@ -47,24 +46,6 @@ static void        barco_guardar (barco_t b);
 static bool        barco_hay_adyacentes(barco_bando_e bando, size_t f, size_t c);
 static bool        barco_se_sale(int f, int c);
 
-bool barco_crear_b(size_t len, barco_dir_e dir, int f, int c)
-{
-    barco_t b;
-    bool    ret;
-
-    b.bando = ALIADO;
-    b.len   = len;
-    b.dir   = dir;
-    b.pos.x = c;
-    b.pos.y = f;
-
-    ret = barco_validar(b);
-    if (ret == true) {
-        barco_guardar(b);
-    }
-
-    return ret;
-}
 
 bool barco_crear(size_t len, barco_bando_e bando)
 {
@@ -272,20 +253,6 @@ void barco_init()
         }
     }
 
-    /* 2 barcos de 2, 1 de 3 y 1 de 4 */
-    /* Crear barcos */
-
-    ret = barco_crear((size_t) 2, ALIADO);
-    ret = barco_crear((size_t) 2, ALIADO);
-    ret = barco_crear((size_t) 3, ALIADO);
-    ret = barco_crear((size_t) 4, ALIADO);
-
-    ret = barco_crear((size_t) 2, ENEMIGO);
-    ret = barco_crear((size_t) 2, ENEMIGO);
-    ret = barco_crear((size_t) 3, ENEMIGO);
-    ret = barco_crear((size_t) 4, ENEMIGO);
-
-
     if (ret == false) {
         fprintf(stderr, "No se han podido inicializar los barcos.\n");
         exit(EXIT_FAILURE);
@@ -312,7 +279,7 @@ void barco_imprimir(SDL_Renderer *rnd)
     SDL_SetRenderDrawColor(rnd, 168, 98, 50, SDL_ALPHA_OPAQUE);
     for (f = 0; f < FILAS; f++) {
         for (c = 0; c < COLUMNAS; c++) {
-            if (barcos_enemigos[f][c] == TOCADO) {
+            if (barcos_enemigos[f][c] == BARCO) {
                 SDL_RenderDrawPoint(rnd, c + COLUMNAS, f);
             }
         }
@@ -321,16 +288,47 @@ void barco_imprimir(SDL_Renderer *rnd)
     return;
 }
 
-bool barco_celda_ocupada(SDL_Point p)
+bool barco_crear_b(size_t len, barco_dir_e dir, int f, int c)
+{
+    barco_t b;
+    bool    ret;
+
+    b.bando = ALIADO;
+    b.len   = len;
+    b.dir   = dir;
+    b.pos.x = c;
+    b.pos.y = f;
+
+    ret = barco_validar(b);
+    if (ret == true) {
+        barco_guardar(b);
+    }
+
+    return ret;
+}
+
+bool barco_dispara_celda(SDL_Point p)
 {
     bool ret = false;
 
-    printf("Comprobando barcos_enemigos[%d][%d]\n", p.y, p.x - COLUMNAS);
 
-    if (barcos_enemigos[p.y][p.x - COLUMNAS] == BARCO) {
-        barcos_enemigos[p.y][p.x - COLUMNAS] = TOCADO;
-        ret = true;
+    /* Disparo enemigo */
+    if (p.x >= COLUMNAS) {
+        printf("Comprobando barcos_enemigos[%d][%d]\n", p.y, p.x - COLUMNAS);
+        if (barcos_enemigos[p.y][p.x - COLUMNAS] == BARCO) {
+            barcos_enemigos[p.y][p.x - COLUMNAS] = TOCADO;
+            ret = true;
+        }
     }
+    /* Disparo aliado */
+    else if (p.x < COLUMNAS) {
+        printf("Comprobando barcos_aliados[%d][%d]\n", p.y, p.x);
+        if (barcos_aliados[p.y][p.x] == BARCO) {
+            barcos_aliados[p.y][p.x] = TOCADO;
+            ret = true;
+        }
+    }
+
 
     return ret;
 }

@@ -5,6 +5,7 @@
 
 #include <SDL2/SDL.h>
 
+#include "inc/partida.h"
 #include "inc/barco.h"
 #include "inc/hlf.h"
 
@@ -58,8 +59,8 @@ int main()
     SDL_Renderer *rnd = NULL;
     SDL_Window   *win = NULL;
 
-    bool          run = true;
     bool          casillas[FILAS][COLUMNAS * 2];
+    bool          partida_acabada = false;
 
     SDL_Point     mouse;
 
@@ -70,7 +71,7 @@ int main()
     printf("PXCOLUMNAS: %d\n", PXCOLUMNAS);
     printf("PXFILAS:  %d\n", PXFILAS);
 
-    barco_init();
+    partida_init(FILAS, COLUMNAS);
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
         fprintf(stderr, "Error en la inicialización de SDL.\n");
@@ -94,7 +95,7 @@ int main()
     SDL_RenderSetLogicalSize(rnd, COLUMNAS * 2, FILAS);
 
 
-    while (run) {
+    while (partida_acabada == false) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 run = false;
@@ -122,14 +123,13 @@ int main()
                 p.x = (auxx / (int) PXFACTOR);
                 p.y = (auxy / (int) PXFACTOR);
 
+                /* Comprobar que sea en la pantalla enemiga */
                 if (p.x >= COLUMNAS) {
-                    printf("Comprobando (x, y) (%d, %d)\n", p.x, p.y);
-                    if (barco_celda_ocupada(p) == true) {
-                        printf("Tocado! (x, y) (%d, %d)\n", p.x, p.y);
-                    }
+                    //printf("Comprobando (x, y) (%d, %d)\n", p.x, p.y);
+                    partida_disparo_aliado(p);
+                    partida_disparo_enemigo();
+                    partida_acabada = partida_esta_acabada();
                 }
-
-
             }
         }
 
@@ -138,6 +138,8 @@ int main()
         SDL_RenderPresent(rnd);
         SDL_Delay(REFRESH_RT);
     }
+
+    // Animación de terminación
 
     SDL_DestroyRenderer(rnd);
     SDL_DestroyWindow(win);
