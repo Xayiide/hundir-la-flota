@@ -17,11 +17,6 @@ typedef enum {
     HORIZONTAL = 1
 } barco_dir_e;
 
-typedef enum {
-    ALIADO  = 0,
-    ENEMIGO = 1
-} barco_bando_e;
-
 typedef struct {
     size_t        len;
     barco_dir_e   dir;
@@ -73,11 +68,6 @@ bool barco_crear(size_t len, barco_bando_e bando)
     else {
         //barco_guardar(dir, len, c, f);
         barco_guardar(barco);
-        printf("Barco guardado:\n");
-        printf("    dir: %d\n",  barco.dir);
-        printf("    len: %ld\n", barco.len);
-        printf("    x:   %d\n",  barco.pos.x);
-        printf("    y:   %d\n",  barco.pos.y);
     }
 
     return ret;
@@ -241,7 +231,6 @@ bool barco_se_sale(int f, int c) {
 
 void barco_init()
 {
-    bool ret;
     int  f, c;
     srand((unsigned int) time(NULL));
 
@@ -251,11 +240,6 @@ void barco_init()
             barcos_aliados[f][c]  = AGUA;
             barcos_enemigos[f][c] = AGUA;
         }
-    }
-
-    if (ret == false) {
-        fprintf(stderr, "No se han podido inicializar los barcos.\n");
-        exit(EXIT_FAILURE);
     }
 
     return;
@@ -314,7 +298,6 @@ bool barco_dispara_celda(SDL_Point p)
 
     /* Disparo enemigo */
     if (p.x >= COLUMNAS) {
-        printf("Comprobando barcos_enemigos[%d][%d]\n", p.y, p.x - COLUMNAS);
         if (barcos_enemigos[p.y][p.x - COLUMNAS] == BARCO) {
             barcos_enemigos[p.y][p.x - COLUMNAS] = TOCADO;
             ret = true;
@@ -322,7 +305,6 @@ bool barco_dispara_celda(SDL_Point p)
     }
     /* Disparo aliado */
     else if (p.x < COLUMNAS) {
-        printf("Comprobando barcos_aliados[%d][%d]\n", p.y, p.x);
         if (barcos_aliados[p.y][p.x] == BARCO) {
             barcos_aliados[p.y][p.x] = TOCADO;
             ret = true;

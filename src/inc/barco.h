@@ -4,6 +4,11 @@
 #include <stdbool.h>  /* bool         */
 #include <SDL2/SDL.h> /* SDL_Renderer */
 
+typedef enum {
+    ALIADO  = 0,
+    ENEMIGO = 1
+} barco_bando_e;
+
 void barco_init();
 void barco_imprimir(SDL_Renderer *rnd);
 bool barco_crear   (size_t len, barco_bando_e bando);

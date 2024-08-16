@@ -98,12 +98,12 @@ int main()
     while (partida_acabada == false) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
-                run = false;
+                partida_acabada = true;
             }
             else if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                     case SDLK_q:
-                        run = false;
+                        partida_acabada = true;
                         break;
                 }
             }
